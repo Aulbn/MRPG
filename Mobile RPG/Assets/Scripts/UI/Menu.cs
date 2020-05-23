@@ -10,10 +10,10 @@ public class Menu : MonoBehaviour
     [SerializeField] private SingleToggle pauseButton;
     [SerializeField] private SingleToggle menuButton;
 
-    private void Start()
-    {
-        Close();
-    }
+    //private void Start()
+    //{
+    //    Close();
+    //}
 
     public void Open()
     {

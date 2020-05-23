@@ -4,12 +4,15 @@ using UnityEngine;
 
 public class Pickable : MonoBehaviour
 {
-    private List<Item> content;
+    [SerializeField] private List<Item> content;
+    private float size;
 
-    public static void Spawn(Vector3 position, Item[] content)
+    public static void Spawn(Vector3 position, Item[] content, float size)
     {
-        Instantiate(UIManager.Invetory.bagPrefab, position, Quaternion.identity)
-            .GetComponent<Pickable>().SetContent(content);
+        Pickable p = Instantiate(UIManager.LootInventory.bagPrefab, position, Quaternion.identity)
+            .GetComponent<Pickable>();
+        p.SetContent(content);
+        p.size = size;
     }
 
     private void SetContent(Item[] content)
@@ -21,6 +24,9 @@ public class Pickable : MonoBehaviour
     {
         //Show inventory in UI
         Debug.Log("Open loot");
+        UIManager.LootInventory.SetContent(content.ToArray(), 10);
+        UIManager.LootInventory.Open();
+        PlayerInventory.Open();
     }
 
     public void Destroy()
@@ -38,5 +44,6 @@ public class Pickable : MonoBehaviour
     {
         if (other.CompareTag("Player"))
             Player.Instance.GetComponent<PlayerInteraction>().RemovePickable(this);
+        UIManager.LootInventory.Close();
     }
 }
