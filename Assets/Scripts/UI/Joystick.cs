@@ -1,9 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class Joystick : MonoBehaviour
+public class Joystick : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IDragHandler
 {
     [SerializeField] private RectTransform joystickArea;
     [SerializeField] private RectTransform joystickOrigin;
@@ -12,10 +13,10 @@ public class Joystick : MonoBehaviour
     public float range = 10f;
 
     [HideInInspector] public bool isEnabled = true;
-    [HideInInspector] public bool isActive = false;
+    //[HideInInspector] public bool isActive = false;
 
     private Vector2 originPos;
-
+    private int touchIndex;
 
     private void Start()
     {
@@ -25,34 +26,26 @@ public class Joystick : MonoBehaviour
     private void Update()
     {
         if (!isEnabled) return;
-
-
-        if (Input.GetKeyDown(KeyCode.Mouse0))
-        {
-            if (joystickArea.rect.Contains(joystickArea.InverseTransformPoint(Input.mousePosition)))
-            {
-                ShowJoystick(Input.mousePosition);
-            }
-        } else if (Input.GetKeyUp(KeyCode.Mouse0))
-        {
-            HideJoystick();
-        }
-
-        if (isActive)
-        {
-            UpdateJoystick();
-        }
-
-
     }
 
-    private void UpdateJoystick()
+    public void OnDrag(PointerEventData eventData)
     {
-        Vector3 allowedPos = Input.mousePosition - joystickOrigin.position;
+        Vector3 pos = new Vector3(eventData.position.x, eventData.position.y);
+        Vector3 allowedPos = pos - joystickOrigin.position;
         allowedPos = Vector3.ClampMagnitude(allowedPos, (range * Screen.width));
-        joystick.position = joystickOrigin.position + Vector3.ClampMagnitude(Input.mousePosition - joystickOrigin.position, (range * Screen.width));
+        joystick.position = joystickOrigin.position + Vector3.ClampMagnitude(pos - joystickOrigin.position, (range * Screen.width));
 
         Player.Movement.SetMovement(allowedPos.normalized * allowedPos.magnitude / (range * Screen.width));
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        ShowJoystick(eventData.pressPosition);
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        HideJoystick();
     }
 
     private void ShowJoystick(Vector2 joystickPosition)
@@ -68,7 +61,7 @@ public class Joystick : MonoBehaviour
 
     private void ToggleJoystick(bool enable)
     {
-        isActive = enable;
+        //isActive = enable;
         joystickOrigin.gameObject.SetActive(enable);
         Player.Movement.SetMovement(Vector2.zero);
     }
@@ -76,6 +69,8 @@ public class Joystick : MonoBehaviour
     public void SetAvailable(bool enable)
     {
         isEnabled = enable;
-        isActive = enable ? isActive : false;
+        if (!enable)
+            HideJoystick();
+        //isActive = enable ? isActive : false;
     }
 }
